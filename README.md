@@ -1,4 +1,4 @@
-# Detecção de Anomalias em Transações Financeiras
+# Detecção de anomalias em transações financeiras
 
 **Trabalho Final de Pensamento Analítico de Dados**  
 **Professor: Fernando M. Federson**
@@ -9,7 +9,7 @@
 
 ---
 
-## Visão Geral
+## Visão geral
 
 Este projeto é inspirado no projeto de referência **"Credit Card Fraud Detection"** (Rashmi, CBAP — Medium, 2024), seguindo a mesma estrutura metodológica **AGEMC** (Ask → Get → Explore → Model → Communicate).
 
@@ -17,7 +17,7 @@ O dataset utilizado é [Credit Card Fraud Detection](https://www.kaggle.com/data
 
 ---
 
-## Pergunta (Ask)
+## Pergunta (ask)
 
 > **É possível detectar transações fraudulentas em cartões de crédito com alta precisão, mesmo diante de um conjunto de dados extremamente desbalanceado?**
 
@@ -28,13 +28,13 @@ Como sub-questões analíticas:
 
 ---
 
-## ✨ Nossa Originalidade
+## Nossa originalidade
 
 A definir
 
 ---
 
-## 📐 Metodologia AGEMC
+## Metodologia AGEMC
 
 ```
 A  →  Pergunta de negócio formulada
@@ -46,7 +46,7 @@ C  →  Comunicação dos resultados com visualizações e recomendação de neg
 
 ---
 
-## 🔬 Etapas do Projeto FMF
+## Etapas do Projeto FMF
 
 ### 1. Get — Obtenção dos Dados
 - Dataset: [Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
@@ -79,7 +79,7 @@ C  →  Comunicação dos resultados com visualizações e recomendação de neg
 - Recomendação final com justificativa de negócio
 ---
 
-## 📊 Métricas de Avaliação
+## Métricas de avaliação
 
 | Métrica | Descrição |
 |---|---|
@@ -92,7 +92,7 @@ C  →  Comunicação dos resultados com visualizações e recomendação de neg
 
 ---
 
-## 📖 Referência
+## Referência
 
 > Rashmi, CBAP. *Credit Card Fraud Detection — A Data Science Project*. Medium, nov. 2024.  
 > Dataset: ULB Machine Learning Group. *Credit Card Fraud Detection*. Kaggle, 2018.
