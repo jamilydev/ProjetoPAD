@@ -30,7 +30,13 @@ Como sub-questões analíticas:
 
 ## Nossa originalidade
 
-A definir
+Nosso grupo decidiu manter a pergunta do AGEMC e o mesmo dataset da referência, mas fizemos uma análise exploratória mais aprofundada e modelamos os dados de forma diferente.
+
+Nossa originalidade está em:
+- Utilizar a variável 'Time' para identificar possíveis fraudes, ao contrário da referência que remove essa feature.
+- Não utilizar o balanceamento de classes no próprio dataset, mas sim o cost-sensitive learning, para treinar os modelos.
+- Otimizar o modelo XGBoost com Optuna, focando exclusivamente na métrica PR-AUC.
+- Calibrar as saídas do modelo com Platt Scaling ou Isotonic Regression para garantir que as probabilidades estimadas reflitam o risco real para a operação de negócio.
 
 ---
 
