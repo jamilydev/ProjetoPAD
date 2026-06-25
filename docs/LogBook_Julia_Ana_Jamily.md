@@ -28,10 +28,6 @@
 
 - **Correção da justificativa de normalização no EDA (`EDA_CreditCardFraudDetection_Duarte.ipynb`):** o texto original afirmava que modelos de árvore podem ser prejudicados pela magnitude das features, o que é incorreto, pois árvores são invariantes a transformações monotônicas. Reescrito para identificar corretamente quais modelos precisam de escalonamento (Regressão Logística, SVM) e documentar que o escalonamento no EDA é apenas para fins de visualização, com link para o protocolo correto no notebook de modelagem.
 
-- **Análise exploratória aprofundada no EDA:** adicionadas duas seções novas antes do t-SNE:
-  - *Seção 4 — Distribuição de `Amount` por classe:* KDE em escala log, boxplot e estatísticas descritivas. Mediana fraude ≈ €9 vs legítima ≈ €22, levantando a hipótese de card testing.
-  - *Seção 5 — Features mais discriminativas:* KDE para V14, V17, V12 (correlação negativa forte com fraude) e V4, V11 (correlação positiva). Tabela de medianas por classe. Seção do t-SNE renumerada de §4 para §6.
-
 - **Comparação empírica Cost-Sensitive vs. SMOTE:** adicionada Seção 2 no notebook de modelagem com comparação em 5 seeds independentes. Resultado: Cost-Sensitive (PR-AUC 0,811 ± 0,034) vs. SMOTE (0,804 ± 0,035) — diferença de +0,007, dentro do ruído. Conclusão documentada: abordagens equivalentes, Cost-Sensitive preferível por não gerar dados sintéticos e ter pipeline mais simples.
 
 - **Calibração de probabilidades — Seção 4:** adicionada ao final do notebook de modelagem.
