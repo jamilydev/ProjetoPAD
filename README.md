@@ -118,3 +118,6 @@ C  →  Comunicação dos resultados em linguagem acessível, com pipeline de pr
 ---
 
 O logbook detalhado dos membros está em [`docs/`](docs/).
+
+## Apresentação ##
+Link: https://www.canva.com/design/DAHNgbB-paU/f-Igc61aNCtyXbFE6MT30Q/edit
