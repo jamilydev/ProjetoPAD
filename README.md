@@ -22,79 +22,95 @@ O dataset utilizado é [Credit Card Fraud Detection](https://www.kaggle.com/data
 > **É possível detectar transações fraudulentas em cartões de crédito com alta precisão, mesmo diante de um conjunto de dados extremamente desbalanceado?**
 
 Como sub-questões analíticas:
-- Quais técnicas de balanceamento produzem melhores resultados neste contexto?
+- Cost-Sensitive Learning supera SMOTE neste contexto — e por qual margem?
 - Qual modelo oferece o melhor equilíbrio entre precisão e recall para detecção de fraude?
-- Como o limiar de decisão (*threshold*) influencia o desempenho prático do modelo?
+- A otimização de hiperparâmetros (Optuna) produz ganho real ou ruído estatístico?
+- Calibrar as probabilidades do modelo melhora a experiência operacional do analista de fraude?
 
 ---
 
 ## Nossa originalidade
 
-Nosso grupo decidiu manter a pergunta do AGEMC e o mesmo dataset da referência, mas fizemos uma análise exploratória mais aprofundada e modelamos os dados de forma diferente.
+Nosso grupo manteve a pergunta do AGEMC e o mesmo dataset da referência, mas aprofundou a análise exploratória e modelou os dados de forma diferente — com resultados empíricos que sustentam cada escolha.
 
-Nossa originalidade está em:
-- Utilizar a variável 'Time' para identificar possíveis fraudes, ao contrário da referência que remove essa feature.
-- Não utilizar o balanceamento de classes no próprio dataset, mas sim o cost-sensitive learning, para treinar os modelos.
-- Otimizar o modelo XGBoost com Optuna, focando exclusivamente na métrica PR-AUC.
-- Calibrar as saídas do modelo com Platt Scaling ou Isotonic Regression para garantir que as probabilidades estimadas reflitam o risco real para a operação de negócio.
+- **`Time` → `Hour`:** em vez de descartar a variável temporal, transformamos segundos em hora do dia (0–23), capturando o padrão circadiano das fraudes.
+- **Cost-Sensitive Learning em vez de SMOTE:** testamos as duas abordagens em 5 divisões independentes e confirmamos que são equivalentes em PR-AUC (~0.811 vs ~0.804), com leve vantagem para Cost-Sensitive — que não gera dados sintéticos e é mais simples de manter.
+- **`RobustScaler` aplicado após o split:** a normalização do `Amount` é ajustada exclusivamente no conjunto de treino, eliminando vazamento de dados (*data leakage*) em direção ao teste.
+- **Otimização com Optuna (PR-AUC):** busca bayesiana de hiperparâmetros com validação cruzada estratificada dentro do treino — teste intocado durante toda a busca.
+- **Calibração com Platt Scaling:** os scores brutos do XGBoost ficam comprimidos próximos de 1.0 com `scale_pos_weight` alto. Platt Scaling distribui as probabilidades corretamente, reduzindo alertas diários de 84 → 74 e aumentando a precisão de 90,5% → 97,3%.
 
 ---
 
 ## Metodologia AGEMC
 
 ```
-A  →  Pergunta de negócio formulada
-G  →  Obtenção e inspeção do dataset (Kaggle)
-E  →  Análise exploratória: distribuições, correlações, desbalanceamento
-M  →  Modelagem: pré-processamento, balanceamento (SMOTE), treinamento e threshold tuning
-C  →  Comunicação dos resultados com visualizações e recomendação de negócio
+A  →  Pergunta formulada + sub-questões sobre desbalanceamento e calibração
+G  →  Obtenção e verificação de integridade do dataset (Kaggle, kagglehub)
+E  →  EDA: distribuição de Amount, padrão circadiano, features mais discriminativas, t-SNE
+M  →  Benchmarking → Cost-Sensitive XGBoost → Optuna → Robustez (5 seeds) → Calibração
+C  →  Comunicação dos resultados em linguagem acessível, com pipeline de produção recomendado
 ```
 
 ---
 
-## Etapas do Projeto FMF
+## Etapas do Projeto
 
 ### 1. Get — Obtenção dos Dados
 - Dataset: [Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
 - 284.807 transações · 30 features (V1–V28 via PCA, `Amount`, `Time`) · target: `Class`
 - 492 fraudes (0,17%) → desbalanceamento severo
+- Remoção de 1.081 duplicatas antes da modelagem
 
 ### 2. Explore — Análise Exploratória
-- Verificação de valores nulos e distribuições
-- Análise da feature `Amount` e `Time` em relação à classe
-- Correlações entre features anonimizadas e o target
-- Visualizações de desbalanceamento
+- Verificação de nulos, duplicatas e distribuições gerais
+- Distribuição de `Amount` por classe: mediana fraude ≈ €9 vs legítima ≈ €22 (hipótese de *card testing*)
+- Padrão temporal: conversão de `Time` para `Hour`, análise de sazonalidade circadiana
+- Features mais discriminativas: V14, V17, V12 (correlação negativa) e V4, V11 (correlação positiva)
+- Visualização t-SNE: clusters de fraude separáveis no espaço de baixa dimensão
 
 ### 3. Model — Modelagem
-**Pré-processamento:**
-- Normalização de `Amount` com `StandardScaler`
-- Remoção de `Time` (seguindo referência)
-- Divisão treino/teste estratificada (80/20)
-- Balanceamento com **SMOTE** no conjunto de treino
 
-**Modelos avaliados:**
-- Regressão Logística
-- Árvore de Decisão
-- Random Forest
-- XGBoost
+**Pré-processamento (sem leakage):**
+- `Time` → `Hour` (padrão circadiano); `Time` descartado
+- `Amount` normalizado com `RobustScaler` **após** o split treino/teste
+- Divisão estratificada 80/20
+
+**Modelos comparados (benchmarking):**
+
+| Modelo | PR-AUC |
+|--------|--------|
+| Regressão Logística | 0.694 |
+| Random Forest | 0.805 |
+| **XGBoost (Cost-Sensitive)** | **0.810** |
+
+**Otimização e validação:**
+- Optuna (20 trials, StratifiedKFold, PR-AUC): ganho de +0.0004 — dentro do ruído estatístico para este dataset
+- Teste de robustez em 5 seeds: modelo estável (desvio-padrão ≈ ±0.034)
+- Comparação empírica Cost-Sensitive vs. SMOTE: equivalentes em PR-AUC, CS preferido por simplicidade
+
+**Calibração de probabilidades:**
+- Platt Scaling: 74 alertas/dia, precisão 97,3%, Brier Score 0.000429
+- Isotonic Regression: mais preciso, mas menos estável com poucos positivos
+- Recomendação: **Platt Scaling**
 
 ### 4. Communicate — Comunicação dos Resultados
-- Tabela comparativa de modelos com métricas padrão
-- Curvas Precision × Recall por modelo
-- Gráfico de custo estimado vs. threshold
-- Recomendação final com justificativa de negócio
+- Narrativa acessível para não-especialistas (`Comunicar_StageC.ipynb`)
+- Analogias para desbalanceamento, calibração e escolha de métricas
+- Pipeline de produção recomendado (do timestamp ao score calibrado)
+- Limitações documentadas: retreinamento contínuo, custo real por erro, explicabilidade por transação
+
 ---
 
 ## Métricas de avaliação
 
 | Métrica | Descrição |
 |---|---|
-| **Accuracy** | Proporção de predições corretas (limitada em dados desbalanceados) |
-| **Precision** | De tudo que o modelo apontou como fraude, quanto era fraude de fato |
+| **PR-AUC** | Métrica principal — área sob a curva Precisão-Recall; robusta para classes desbalanceadas |
+| **Precision** | De tudo que o modelo sinalizou como fraude, quanto era fraude de fato |
 | **Recall** | De todas as fraudes reais, quantas o modelo detectou |
-| **F1-Score** | Média harmônica entre Precision e Recall |
-| **ROC-AUC** | Capacidade de discriminação geral do modelo |
-| **Custo estimado** | Métrica original — impacto financeiro por limiar de decisão |
+| **Brier Score** | Qualidade da calibração — penaliza probabilidades mal estimadas |
+| **F1-Score** | Média harmônica entre Precision e Recall (limiar fixo) |
+| **Accuracy** | Não usada como critério — enganosa em dados desbalanceados |
 
 ---
 
@@ -105,6 +121,15 @@ C  →  Comunicação dos resultados com visualizações e recomendação de neg
 
 ---
 
-## 📌 Acompanhamento
+## Registro de progresso
 
-O progresso do projeto é registrado via **commits no GitHub**, permitindo rastrear cada etapa do AGEMC conforme executada pelo grupo.
+| Data | Etapa | O que foi feito |
+|------|-------|-----------------|
+| 17/06/2026 | E | Análise exploratória inicial: desbalanceamento, conversão `Time` → `Hour`, t-SNE, normalização de `Amount`, definição da estratégia de modelagem |
+| 25/06/2026 | E | EDA aprofundada: distribuição de `Amount` por classe (hipótese de *card testing*), análise das features mais discriminativas (V14, V17, V12, V4, V11) |
+| 25/06/2026 | M | Correção de *data leakage*: `RobustScaler` movido para depois do split treino/teste; robustez verificada em 5 seeds |
+| 25/06/2026 | M | Comparação empírica Cost-Sensitive vs. SMOTE: equivalentes em PR-AUC (~0.811 vs ~0.804), CS mantido por simplicidade e ausência de dados sintéticos |
+| 25/06/2026 | M | Calibração de probabilidades: Platt Scaling reduz alertas diários de 84 → 74 e aumenta precisão de 90,5% → 97,3% |
+| 25/06/2026 | C | Notebook `Comunicar_StageC.ipynb`: narrativa acessível com pipeline de produção recomendado |
+
+O logbook detalhado de cada membro está em [`docs/`](docs/).
