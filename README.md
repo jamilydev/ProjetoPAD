@@ -62,9 +62,7 @@ C  →  Comunicação dos resultados em linguagem acessível, com pipeline de pr
 
 ### 2. Explore — Análise Exploratória
 - Verificação de nulos, duplicatas e distribuições gerais
-- Distribuição de `Amount` por classe: mediana fraude ≈ €9 vs legítima ≈ €22 (hipótese de *card testing*)
 - Padrão temporal: conversão de `Time` para `Hour`, análise de sazonalidade circadiana
-- Features mais discriminativas: V14, V17, V12 (correlação negativa) e V4, V11 (correlação positiva)
 - Visualização t-SNE: clusters de fraude separáveis no espaço de baixa dimensão
 
 ### 3. Model — Modelagem
@@ -72,7 +70,7 @@ C  →  Comunicação dos resultados em linguagem acessível, com pipeline de pr
 **Pré-processamento (sem leakage):**
 - `Time` → `Hour` (padrão circadiano); `Time` descartado
 - `Amount` normalizado com `RobustScaler` **após** o split treino/teste
-- Divisão estratificada 80/20
+- Divisão estratificada 60/20/20
 
 **Modelos comparados (benchmarking):**
 
