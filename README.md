@@ -24,7 +24,6 @@ O dataset utilizado é [Credit Card Fraud Detection](https://www.kaggle.com/data
 Como sub-questões analíticas:
 - Cost-Sensitive Learning supera SMOTE neste contexto — e por qual margem?
 - Qual modelo oferece o melhor equilíbrio entre precisão e recall para detecção de fraude?
-- A otimização de hiperparâmetros (Optuna) produz ganho real ou ruído estatístico?
 - Calibrar as probabilidades do modelo melhora a experiência operacional do analista de fraude?
 
 ---
@@ -94,10 +93,7 @@ C  →  Comunicação dos resultados em linguagem acessível, com pipeline de pr
 - Recomendação: **Platt Scaling**
 
 ### 4. Communicate — Comunicação dos Resultados
-- Narrativa acessível para não-especialistas (`Comunicar_StageC.ipynb`)
-- Analogias para desbalanceamento, calibração e escolha de métricas
-- Pipeline de produção recomendado (do timestamp ao score calibrado)
-- Limitações documentadas: retreinamento contínuo, custo real por erro, explicabilidade por transação
+- Exposição dos resultados e considerações finais (`Communicate.ipynb`)
 
 ---
 
@@ -121,15 +117,4 @@ C  →  Comunicação dos resultados em linguagem acessível, com pipeline de pr
 
 ---
 
-## Registro de progresso
-
-| Data | Etapa | O que foi feito |
-|------|-------|-----------------|
-| 17/06/2026 | E | Análise exploratória inicial: desbalanceamento, conversão `Time` → `Hour`, t-SNE, normalização de `Amount`, definição da estratégia de modelagem |
-| 25/06/2026 | E | EDA aprofundada: distribuição de `Amount` por classe (hipótese de *card testing*), análise das features mais discriminativas (V14, V17, V12, V4, V11) |
-| 25/06/2026 | M | Correção de *data leakage*: `RobustScaler` movido para depois do split treino/teste; robustez verificada em 5 seeds |
-| 25/06/2026 | M | Comparação empírica Cost-Sensitive vs. SMOTE: equivalentes em PR-AUC (~0.811 vs ~0.804), CS mantido por simplicidade e ausência de dados sintéticos |
-| 25/06/2026 | M | Calibração de probabilidades: Platt Scaling reduz alertas diários de 84 → 74 e aumenta precisão de 90,5% → 97,3% |
-| 25/06/2026 | C | Notebook `Comunicar_StageC.ipynb`: narrativa acessível com pipeline de produção recomendado |
-
-O logbook detalhado de cada membro está em [`docs/`](docs/).
+O logbook detalhado dos membros está em [`docs/`](docs/).
